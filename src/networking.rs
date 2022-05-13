@@ -1,6 +1,9 @@
 use crate::GameState;
 use bevy::{log, prelude::*, tasks::IoTaskPool};
-use matchbox_socket::WebRtcNonBlockingSocket;
+use bevy_ggrs::SessionType;
+use bytemuck::{Pod, Zeroable};
+use ggrs::{Config, SessionBuilder};
+use matchbox_socket::WebRtcSocket;
 
 pub struct NetworkingPlugin;
 
@@ -16,7 +19,7 @@ impl Plugin for NetworkingPlugin {
 fn start_matchbox_socket(mut commands: Commands, task_pool: Res<IoTaskPool>) {
     let room_url = "ws://127.0.0.1:3536/next_2";
     log::info!("Connecting to matchbox server: {}", room_url);
-    let (socket, message_loop) = WebRtcNonBlockingSocket::new(room_url);
+    let (socket, message_loop) = WebRtcSocket::new(room_url);
 
     // The message loop needs to be awaited, or nothing will happen.
     // We do this here using bevy's task system.
@@ -24,15 +27,34 @@ fn start_matchbox_socket(mut commands: Commands, task_pool: Res<IoTaskPool>) {
     commands.insert_resource(Some(socket));
 }
 
-fn wait_for_players(mut socket: ResMut<Option<WebRtcNonBlockingSocket>>) {
+/// You need to define a config struct to bundle all the generics of GGRS. You can safely ignore `State` and leave it as u8 for all GGRS functionality.
+/// Source: https://github.com/gschup/bevy_ggrs/blob/7d3def38720161610313c7031d6f1cb249098b43/examples/box_game/box_game.rs#L27
+#[derive(Debug)]
+pub struct GGRSConfig;
+impl Config for GGRSConfig {
+    type Input = BoxInput;
+    type State = u8;
+    type Address = String;
+}
+
+#[repr(C)]
+#[derive(Copy, Clone, PartialEq, Pod, Zeroable)]
+pub struct BoxInput {
+    /// This is the number of bytes one peer’s input is.
+    /// In our case, the input consists of four direction buttons, and eventually the fire button as well.
+    /// This means it fits easily within a single byte:
+    pub input: u8,
+}
+
+fn wait_for_players(mut commands: Commands, mut socket: ResMut<Option<WebRtcSocket>>) {
+    let socket = socket.as_mut();
     if socket.is_none() {
         // If there is no socket we've already started the game
         return;
     }
-    let socket = socket.as_mut().as_mut().unwrap();
     // Check for new connections
-    socket.accept_new_connections();
-    let players = socket.players();
+    socket.as_mut().unwrap().accept_new_connections();
+    let players = socket.as_ref().unwrap().players();
 
     let num_players = 2;
     if players.len() < num_players {
@@ -40,4 +62,25 @@ fn wait_for_players(mut socket: ResMut<Option<WebRtcNonBlockingSocket>>) {
     }
 
     log::info!("All players have joined, starting game");
+
+    // consume the socket (currently required because GGRS takes ownership of its socket)
+    let socket = socket.take().unwrap();
+
+    let max_predictions = 12;
+
+    // create a GGRS P2P session
+    let mut p2p_session: SessionBuilder<GGRSConfig> = SessionBuilder::new()
+        .with_num_players(num_players)
+        .with_max_prediction_window(max_predictions)
+        .with_input_delay(2);
+
+    for (i, player) in players.into_iter().enumerate() {
+        p2p_session = p2p_session
+            .add_player(player, i)
+            .expect("Failed to add player");
+    }
+
+    // start the GGRS session
+    commands.insert_resource(p2p_session.start_p2p_session(socket));
+    commands.insert_resource(SessionType::P2PSession);
 }
