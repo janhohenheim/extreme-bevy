@@ -1,9 +1,9 @@
 [package]
-name = "bevy_game" # ToDo
-version = "0.1.0"
-publish = false
 authors = ["Jan Hohenheim <jan@hohenheim.ch>"]
 edition = "2021"
+name = "bevy_game"
+publish = false
+version = "0.1.0"
 
 [features]
 default = [
@@ -11,24 +11,23 @@ default = [
     "bevy/render",
     "bevy/png",
     "bevy/x11",
-    "bevy_kira_audio/ogg"
+    "bevy_kira_audio/ogg",
 ]
-
-dev = [
-    # Does not work for wasm
-    # "bevy/dynamic",
-    "bevy_editor_pls"
-]
+dev = ["bevy_editor_pls"]
 
 [dependencies]
 bevy = { version = "0.7", default-features = false }
-bevy_kira_audio = { version = "0.9" }
-bevy_asset_loader = { version = "0.10" }
-bevy_editor_pls = { git = "https://github.com/jakobhellermann/bevy_editor_pls", optional = true }
+bevy_ggrs = "0.9.0"
+matchbox_socket = { version = "0.3.0", features = [ "ggrs-socket" ] }
 rand = "0.8.3"
+bevy_kira_audio = "0.9"
+bevy_asset_loader = "0.10"
+bevy_editor_pls = { git = "https://github.com/jakobhellermann/bevy_editor_pls", optional = true }
+ggrs = "0.9.1"
 
-[target.'cfg(target_os = "linux")'.dependencies]
-winit = { version = "0.25", features=["x11"]}
+[target."cfg(target_os = \"linux\")".dependencies.winit]
+features = ["x11"]
+version = "0.25"
 
 [build-dependencies]
 embed-resource = "1.4"
