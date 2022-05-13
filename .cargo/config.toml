@@ -24,5 +24,26 @@ rustflags = ["-Zshare-generics=n"]
 #[profile.dev]
 #debug = 1
 
+[build]
+target = "wasm32-unknown-unknown"
+
 [alias]
-serve = "run --target wasm32-unknown-unknown"
+build-dev = "build --features dev"
+
+[target.wasm32-unknown-unknown]
+runner = "wasm-server-runner"
+
+# Enable only a small amount of optimization in debug mode
+[profile.dev]
+opt-level = 1
+# Optional: Uncommenting the following improves compile times, but reduces the amount of debug info to 'line number tables only'
+# In most cases the gains are negligible, but if you are on macos and have slow compile times you should see significant gains.
+debug = 1
+
+# Enable high optimizations for dependencies (incl. Bevy), but not for our code:
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+lto = "thin"
+codegen-units = 1

@@ -22,7 +22,10 @@ impl Plugin for PlayerPlugin {
 }
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    let mut camera_bundle = OrthographicCameraBundle::new_2d();
+    // 1 unit ≙ 50 px
+    camera_bundle.orthographic_projection.scale = 1. / 50.;
+    commands.spawn_bundle(camera_bundle);
 }
 
 fn spawn_player(mut commands: Commands, textures: Res<TextureAssets>) {
@@ -30,7 +33,11 @@ fn spawn_player(mut commands: Commands, textures: Res<TextureAssets>) {
         .spawn_bundle(SpriteBundle {
             texture: textures.texture_bevy.clone(),
             transform: Transform::from_translation(Vec3::new(0., 0., 1.)),
-            ..Default::default()
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(1.0, 1.0)),
+                ..default()
+            },
+            ..default()
         })
         .insert(Player);
 }
@@ -43,7 +50,7 @@ fn move_player(
     if actions.player_movement.is_none() {
         return;
     }
-    let speed = 150.;
+    let speed = 15.;
     let movement = Vec3::new(
         actions.player_movement.unwrap().x * speed * time.delta_seconds(),
         actions.player_movement.unwrap().y * speed * time.delta_seconds(),

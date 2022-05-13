@@ -5,16 +5,6 @@ publish = false
 authors = ["Jan Hohenheim <jan@hohenheim.ch>"]
 edition = "2021"
 
-[profile.dev.package."*"]
-opt-level = 3
-
-[profile.dev]
-opt-level = 1
-
-[profile.release]
-lto = true
-codegen-units = 1
-
 [features]
 default = [
     "bevy/bevy_winit",
@@ -25,8 +15,8 @@ default = [
 ]
 
 dev = [
-    "bevy/dynamic",
-    "bevy-inspector-egui",
+    # Does not work for wasm
+    # "bevy/dynamic",
     "bevy_editor_pls"
 ]
 
@@ -34,7 +24,6 @@ dev = [
 bevy = { version = "0.7", default-features = false }
 bevy_kira_audio = { version = "0.9" }
 bevy_asset_loader = { version = "0.10" }
-bevy-inspector-egui = { version = "0.10", optional = true }
 bevy_editor_pls = { git = "https://github.com/jakobhellermann/bevy_editor_pls", optional = true }
 rand = "0.8.3"
 
