@@ -4,6 +4,7 @@ mod dev;
 mod loading;
 mod menu;
 mod player;
+mod networking;
 
 use crate::actions::ActionsPlugin;
 use crate::audio::InternalAudioPlugin;
@@ -11,6 +12,7 @@ use crate::dev::DevPlugin;
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
 use crate::player::PlayerPlugin;
+use crate::networking::NetworkingPlugin;
 
 use bevy::app::App;
 use bevy::prelude::*;
@@ -38,6 +40,7 @@ impl Plugin for GamePlugin {
             .add_plugin(ActionsPlugin)
             .add_plugin(InternalAudioPlugin)
             .add_plugin(PlayerPlugin)
+            .add_plugin(NetworkingPlugin)
             .add_plugin(DevPlugin);
     }
 }
