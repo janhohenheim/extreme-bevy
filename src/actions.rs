@@ -1,5 +1,5 @@
 use crate::networking::{InputFlags, InputProtocol, LocalHandles};
-use bevy::{log, prelude::*};
+use bevy::prelude::*;
 use ggrs::{InputStatus, PlayerHandle};
 pub struct ActionsPlugin;
 
@@ -29,7 +29,6 @@ pub fn set_movement_actions(
 fn parse_protocol_to_actions(protocol: &InputProtocol, status: InputStatus) -> Actions {
     let mut action = Actions::default();
     if status == InputStatus::Disconnected {
-        log::info!("Someone disconnected");
         return action;
     }
 
