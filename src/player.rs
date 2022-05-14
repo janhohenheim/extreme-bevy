@@ -25,7 +25,9 @@ fn spawn_camera(mut commands: Commands) {
     let mut camera_bundle = OrthographicCameraBundle::new_2d();
     // 1 unit ≙ 50 px
     camera_bundle.orthographic_projection.scale = 1. / 50.;
-    commands.spawn_bundle(camera_bundle);
+    commands
+        .spawn_bundle(camera_bundle)
+        .insert(Name::new("2D Camera"));
 }
 
 fn spawn_player(mut commands: Commands, textures: Res<TextureAssets>) {
@@ -39,6 +41,7 @@ fn spawn_player(mut commands: Commands, textures: Res<TextureAssets>) {
             },
             ..default()
         })
+        .insert(Name::new("Player"))
         .insert(Player);
 }
 

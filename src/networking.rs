@@ -130,12 +130,10 @@ fn wait_for_players(mut commands: Commands, mut socket: ResMut<Option<WebRtcSock
     // consume the socket (currently required because GGRS takes ownership of its socket)
     let socket = socket.take().unwrap();
 
-    let max_predictions = 12;
-
     // create a GGRS P2P session
     let mut p2p_session: SessionBuilder<GGRSConfig> = SessionBuilder::new()
         .with_num_players(num_players)
-        .with_max_prediction_window(max_predictions)
+        .with_max_prediction_window(12)
         .with_fps(FPS)
         .expect("Invalid FPS")
         .with_input_delay(2);
