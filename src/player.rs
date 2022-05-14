@@ -1,4 +1,5 @@
 use crate::actions::Actions;
+use crate::config::FPS;
 use crate::loading::TextureAssets;
 use crate::GameState;
 use bevy::prelude::*;
@@ -41,18 +42,14 @@ fn spawn_player(mut commands: Commands, textures: Res<TextureAssets>) {
         .insert(Player);
 }
 
-pub fn move_player(
-    time: Res<Time>,
-    actions: Res<Actions>,
-    mut player_query: Query<&mut Transform, With<Player>>,
-) {
+pub fn move_player(actions: Res<Actions>, mut player_query: Query<&mut Transform, With<Player>>) {
     if actions.player_movement.is_none() {
         return;
     }
-    let speed = 15.;
+    let speed = 15. / FPS as f32;
     let movement = Vec3::new(
-        actions.player_movement.unwrap().x * speed * time.delta_seconds(),
-        actions.player_movement.unwrap().y * speed * time.delta_seconds(),
+        actions.player_movement.unwrap().x * speed,
+        actions.player_movement.unwrap().y * speed,
         0.,
     );
     for mut player_transform in player_query.iter_mut() {

@@ -1,4 +1,5 @@
-use crate::actions::{create_input_protocol, set_movement_actions, Actions};
+use crate::actions::{create_input_protocol, set_movement_actions};
+use crate::config::FPS;
 use crate::player::move_player;
 use crate::GameState;
 use bevy::{log, prelude::*, tasks::IoTaskPool};
@@ -21,6 +22,7 @@ impl Plugin for NetworkingPlugin {
     fn build(&self, app: &mut App) {
         GGRSPlugin::<GGRSConfig>::new()
             .with_input_system(create_input_protocol)
+            .with_update_frequency(FPS)
             .with_rollback_schedule(
                 Schedule::default().with_stage(
                     ROLLBACK_SYSTEMS,
@@ -134,6 +136,8 @@ fn wait_for_players(mut commands: Commands, mut socket: ResMut<Option<WebRtcSock
     let mut p2p_session: SessionBuilder<GGRSConfig> = SessionBuilder::new()
         .with_num_players(num_players)
         .with_max_prediction_window(max_predictions)
+        .with_fps(FPS)
+        .expect("Invalid FPS")
         .with_input_delay(2);
 
     let mut handles = Vec::new();
