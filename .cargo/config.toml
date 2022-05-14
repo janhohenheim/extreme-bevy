@@ -19,14 +19,11 @@ rustflags = ["-C", "link-arg=-fuse-ld=/usr/local/bin/zld", "-Zshare-generics=y"]
 linker = "rust-lld.exe"
 rustflags = ["-Zshare-generics=n"]
 
-[build]
-target = "wasm32-unknown-unknown"
-
 [alias]
-dev-web = "run --target wasm32-unknown-unknown --features editor"
-release-web = "run --target wasm32-unknown-unknown --release"
-dev-native = "run --features editor,dynamic"
-release-native = "run --release"
+run_wasm = "run --features editor --target wasm32-unknown-unknown"
+run_wasm_release = "run --release --target wasm32-unknown-unknown"
+run_native = "run --features editor,dynamic"
+run_native_release = "run --release"
 
 [target.wasm32-unknown-unknown]
 runner = "wasm-server-runner"
