@@ -1,3 +1,4 @@
+use super::shared::*;
 use crate::GameState;
 use bevy::{log, prelude::*, tasks::IoTaskPool};
 use bevy_web_resizer::Plugin as WebResizerPlugin;
@@ -48,12 +49,7 @@ fn wait_for_players(mut commands: Commands, mut socket: ResMut<Option<WebRtcSock
     let socket = socket.take().unwrap();
 
     // create a GGRS P2P session
-    let mut p2p_session: SessionBuilder<GGRSConfig> = SessionBuilder::new()
-        .with_num_players(num_players)
-        .with_max_prediction_window(20)
-        .with_fps(FPS)
-        .expect("Invalid FPS")
-        .with_input_delay(6);
+    let mut p2p_session = create_session_builder(num_players);
 
     let mut handles = Vec::new();
     for (i, player_type) in players.into_iter().enumerate() {
@@ -71,5 +67,4 @@ fn wait_for_players(mut commands: Commands, mut socket: ResMut<Option<WebRtcSock
         .expect("Session could not be created.");
     commands.insert_resource(session);
     commands.insert_resource(LocalHandles { handles });
-    commands.insert_resource(SessionType::P2PSession);
 }

@@ -7,7 +7,7 @@ use bevy_game::GamePlugin;
 
 fn main() {
     let mut app = App::new();
-    app.insert_resource(Msaa { samples: 1 })
+    app.insert_resource(Msaa { samples: 4 })
         .insert_resource(ClearColor(Color::rgb(0.4, 0.4, 0.4)))
         .insert_resource(WindowDescriptor {
             width: 800.,
