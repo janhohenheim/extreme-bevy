@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-#[cfg(feature = "dev")]
+#[cfg(feature = "editor")]
 use bevy_editor_pls::prelude::*;
 
 #[cfg(debug_assertions)]
@@ -12,7 +12,7 @@ pub struct DevPlugin;
 
 impl Plugin for DevPlugin {
     fn build(&self, app: &mut App) {
-        #[cfg(feature = "dev")]
+        #[cfg(feature = "editor")]
         {
             app.add_plugin(EditorPlugin);
         }

@@ -19,16 +19,14 @@ rustflags = ["-C", "link-arg=-fuse-ld=/usr/local/bin/zld", "-Zshare-generics=y"]
 linker = "rust-lld.exe"
 rustflags = ["-Zshare-generics=n"]
 
-# Optional: Uncommenting the following improves compile times, but reduces the amount of debug info to 'line number tables only'
-# In most cases the gains are negligible, but if you are on macos and have slow compile times you should see significant gains.
-#[profile.dev]
-#debug = 1
-
 [build]
 target = "wasm32-unknown-unknown"
 
 [alias]
-build-dev = "build --features dev"
+dev-web = "run --target wasm32-unknown-unknown --features editor"
+release-web = "run --target wasm32-unknown-unknown --release"
+dev-native = "run --features editor,dynamic"
+release-native = "run --release"
 
 [target.wasm32-unknown-unknown]
 runner = "wasm-server-runner"
