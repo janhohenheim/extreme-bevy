@@ -1,11 +1,11 @@
 mod actions;
 mod audio;
+mod config;
 mod dev;
 mod loading;
 mod menu;
 mod networking;
 mod player;
-mod config;
 
 use crate::actions::ActionsPlugin;
 use crate::audio::InternalAudioPlugin;
