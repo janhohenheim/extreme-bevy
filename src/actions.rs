@@ -1,17 +1,19 @@
 use crate::networking::{InputFlags, InputProtocol, LocalHandles};
 use crate::GameState;
+use bevy::log;
 use bevy::prelude::*;
-use ggrs::PlayerHandle;
-
+use ggrs::{InputStatus, PlayerHandle};
 pub struct ActionsPlugin;
 
 // This plugin listens for keyboard input and converts the input into Actions
 // Actions can then be used as a resource in other systems to act on the player input.
 impl Plugin for ActionsPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<Actions>().add_system_set(
-            SystemSet::on_update(GameState::Playing).with_system(set_movement_actions),
-        );
+        app.init_resource::<Actions>()
+        //.add_system_set(
+        //    SystemSet::on_update(GameState::Playing).with_system(set_movement_actions),
+        //)
+        ;
     }
 }
 
@@ -20,8 +22,11 @@ pub struct Actions {
     pub player_movement: Option<Vec2>,
 }
 
-fn set_movement_actions(mut actions: ResMut<Actions>, inputs: Res<Vec<InputProtocol>>) {
-    let input: InputFlags = inputs[0].try_into().unwrap();
+pub fn set_movement_actions(
+    mut actions: ResMut<Actions>,
+    inputs: Res<Vec<(InputProtocol, InputStatus)>>,
+) {
+    let input: InputFlags = inputs[0].0.try_into().unwrap();
 
     if input.is_empty() {
         actions.player_movement = None;
@@ -62,6 +67,7 @@ macro_rules! generate_bindings {
     ( $( $game_control:pat => $key_codes:expr ),+ ) => {
 
             impl GameControl {
+                #[allow(dead_code)]
                 fn just_released(&self, keyboard_input: &Res<Input<KeyCode>>) -> bool {
                     match self {
                         $ (
@@ -70,6 +76,7 @@ macro_rules! generate_bindings {
                     }
                 }
 
+                #[allow(dead_code)]
                 fn just_pressed(&self, keyboard_input: &Res<Input<KeyCode>>) -> bool {
                     match self {
                         $ (

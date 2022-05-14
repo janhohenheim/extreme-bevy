@@ -1,18 +1,23 @@
-use crate::actions::create_input_protocol;
+use crate::actions::{create_input_protocol, set_movement_actions};
 use crate::GameState;
 use bevy::{log, prelude::*, tasks::IoTaskPool};
 use bevy_ggrs::{GGRSPlugin, SessionType};
 use bitflags::bitflags;
 use bytemuck::{Pod, Zeroable};
-use ggrs::{Config, PlayerHandle, SessionBuilder};
+use ggrs::{Config, PlayerHandle, PlayerType, SessionBuilder};
 use matchbox_socket::WebRtcSocket;
 
 pub struct NetworkingPlugin;
+const ROLLBACK_SYSTEMS: &str = "rollback_systems";
 
 impl Plugin for NetworkingPlugin {
     fn build(&self, app: &mut App) {
         GGRSPlugin::<GGRSConfig>::new()
             .with_input_system(create_input_protocol)
+            .with_rollback_schedule(Schedule::default().with_stage(
+                ROLLBACK_SYSTEMS,
+                SystemStage::parallel().with_system(set_movement_actions),
+            ))
             .build(app);
         app.add_system_set(
             SystemSet::on_enter(GameState::Playing).with_system(start_matchbox_socket),
@@ -119,9 +124,13 @@ fn wait_for_players(mut commands: Commands, mut socket: ResMut<Option<WebRtcSock
         .with_max_prediction_window(max_predictions)
         .with_input_delay(2);
 
-    for (i, player) in players.into_iter().enumerate() {
+    let mut handles = Vec::new();
+    for (i, player_type) in players.into_iter().enumerate() {
+        if player_type == PlayerType::Local {
+            handles.push(i);
+        }
         p2p_session = p2p_session
-            .add_player(player, i)
+            .add_player(player_type, i)
             .expect("Failed to add player");
     }
 
@@ -130,5 +139,6 @@ fn wait_for_players(mut commands: Commands, mut socket: ResMut<Option<WebRtcSock
         .start_p2p_session(socket)
         .expect("Session could not be created.");
     commands.insert_resource(session);
+    commands.insert_resource(LocalHandles { handles });
     commands.insert_resource(SessionType::P2PSession);
 }
