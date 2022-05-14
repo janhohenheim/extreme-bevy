@@ -4,14 +4,9 @@ use crate::player::move_players;
 use crate::GameState;
 use bevy::prelude::*;
 use bevy_ggrs::{GGRSPlugin, SessionType};
-use ggrs::{Config, PlayerHandle, PlayerType, SessionBuilder};
-#[cfg(not(target_arch = "wasm32"))]
-mod native;
-pub mod shared;
-use protocol::GGRSConfig;
+mod targets;
+use targets::{PlatformConfig, PlatformPlugin};
 pub mod protocol;
-#[cfg(target_arch = "wasm32")]
-mod wasm;
 
 pub struct NetworkingPlugin;
 const ROLLBACK_SYSTEMS: &str = "rollback_systems";
@@ -24,7 +19,7 @@ enum Systems {
 
 impl Plugin for NetworkingPlugin {
     fn build(&self, app: &mut App) {
-        GGRSPlugin::<GGRSConfig>::new()
+        GGRSPlugin::<PlatformConfig>::new()
             .with_input_system(create_input_protocol)
             .with_update_frequency(FPS)
             .with_rollback_schedule(
@@ -45,12 +40,7 @@ impl Plugin for NetworkingPlugin {
             .register_rollback_type::<Actions>()
             .build(app);
 
-        app.insert_resource(SessionType::P2PSession);
-
-        #[cfg(target_arch = "wasm32")]
-        app.add_plugin(wasm::WasmPlugin);
-
-        #[cfg(not(target_arch = "wasm32"))]
-        app.add_plugin(native::NativePlugin);
+        app.add_plugin(PlatformPlugin::default())
+            .insert_resource(SessionType::P2PSession);
     }
 }

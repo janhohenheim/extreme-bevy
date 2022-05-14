@@ -1,7 +1,4 @@
-use crate::networking::{
-    protocol::{InputFlags, InputProtocol},
-    shared::LocalHandles,
-};
+use crate::networking::protocol::{InputFlags, InputProtocol, LocalHandles};
 use bevy::prelude::*;
 use ggrs::{InputStatus, PlayerHandle};
 pub struct ActionsPlugin;

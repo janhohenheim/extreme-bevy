@@ -1,9 +1,11 @@
-use super::shared::*;
+use super::shared::{self, create_session_builder};
 use crate::GameState;
 use bevy::{log, prelude::*, tasks::IoTaskPool};
 use bevy_web_resizer::Plugin as WebResizerPlugin;
+use ggrs::{Config, SessionBuilder};
 use matchbox_socket::WebRtcSocket;
 
+#[derive(Debug, Default)]
 pub struct WasmPlugin;
 impl Plugin for WasmPlugin {
     fn build(&self, app: &mut App) {
@@ -15,6 +17,16 @@ impl Plugin for WasmPlugin {
 
         app.add_plugin(WebResizerPlugin);
     }
+}
+
+/// You need to define a config struct to bundle all the generics of GGRS. You can safely ignore `State` and leave it as u8 for all GGRS functionality.
+/// Source: https://github.com/gschup/bevy_ggrs/blob/7d3def38720161610313c7031d6f1cb249098b43/examples/box_game/box_game.rs#L27
+#[derive(Debug)]
+pub struct WasmConfig;
+impl Config for GGRSConfig {
+    type Input = shared::Input;
+    type State = shared::State;
+    type Address = String;
 }
 
 fn start_matchbox_socket(mut commands: Commands, task_pool: Res<IoTaskPool>) {
@@ -49,7 +61,7 @@ fn wait_for_players(mut commands: Commands, mut socket: ResMut<Option<WebRtcSock
     let socket = socket.take().unwrap();
 
     // create a GGRS P2P session
-    let mut p2p_session = create_session_builder(num_players);
+    let mut p2p_session: SessionBuilder<WasmConfig> = create_session_builder(num_players);
 
     let mut handles = Vec::new();
     for (i, player_type) in players.into_iter().enumerate() {

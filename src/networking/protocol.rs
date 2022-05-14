@@ -1,4 +1,6 @@
+use bitflags::bitflags;
 use bytemuck::{Pod, Zeroable};
+use ggrs::PlayerHandle;
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq, Pod, Zeroable)]
@@ -43,4 +45,8 @@ impl TryFrom<InputProtocol> for InputFlags {
             )
         })
     }
+}
+
+pub struct LocalHandles {
+    pub handles: Vec<PlayerHandle>,
 }

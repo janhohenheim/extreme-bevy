@@ -1,20 +1,29 @@
 use std::net::SocketAddr;
 
-use crate::GameState;
+use crate::{networking::protocol::LocalHandles, GameState};
 
-use super::shared::*;
-use super::GGRSConfig;
+use super::shared::{self, create_session_builder};
 use bevy::{log, prelude::*};
-use bevy_ggrs::RollbackIdProvider;
 use clap::Parser;
-use ggrs::{P2PSession, PlayerType, UdpNonBlockingSocket};
+use ggrs::{Config, PlayerType, SessionBuilder, UdpNonBlockingSocket};
 
+#[derive(Debug, Default)]
 pub struct NativePlugin;
 impl Plugin for NativePlugin {
     fn build(&self, app: &mut App) {
         log::info!("Using native networking plugin");
-        app.add_system_set(SystemSet::on_enter(GameState::Playing).with_system(start_session))
+        app.add_system_set(SystemSet::on_enter(GameState::Playing).with_system(start_session));
     }
+}
+
+/// You need to define a config struct to bundle all the generics of GGRS. You can safely ignore `State` and leave it as u8 for all GGRS functionality.
+/// Source: https://github.com/gschup/bevy_ggrs/blob/7d3def38720161610313c7031d6f1cb249098b43/examples/box_game/box_game.rs#L27
+#[derive(Debug)]
+pub struct NativeConfig;
+impl Config for NativeConfig {
+    type Input = shared::Input;
+    type State = shared::State;
+    type Address = SocketAddr;
 }
 
 #[derive(Parser, Debug)]
@@ -32,10 +41,10 @@ fn start_session(mut commands: Commands) {
     assert!(num_players == 2);
 
     // create a GGRS session
-    let mut p2p_session = create_session_builder(num_players);
+    let mut p2p_session: SessionBuilder<NativeConfig> = create_session_builder(num_players);
     let mut handles = Vec::new();
     // add players
-    for (i, player_addr) in args.players.iter().enumerate() {
+    for (i, player_addr) in args.players.into_iter().enumerate() {
         // local player
         if player_addr == "localhost" {
             p2p_session = p2p_session
