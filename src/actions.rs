@@ -1,6 +1,4 @@
 use crate::networking::{InputFlags, InputProtocol, LocalHandles};
-use crate::GameState;
-use bevy::log;
 use bevy::prelude::*;
 use ggrs::{InputStatus, PlayerHandle};
 pub struct ActionsPlugin;
@@ -9,11 +7,7 @@ pub struct ActionsPlugin;
 // Actions can then be used as a resource in other systems to act on the player input.
 impl Plugin for ActionsPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<Actions>()
-        //.add_system_set(
-        //    SystemSet::on_update(GameState::Playing).with_system(set_movement_actions),
-        //)
-        ;
+        app.init_resource::<Actions>();
     }
 }
 
@@ -26,10 +20,10 @@ pub fn set_movement_actions(
     mut actions: ResMut<Actions>,
     inputs: Res<Vec<(InputProtocol, InputStatus)>>,
 ) {
+    *actions = Actions::default();
     let input: InputFlags = inputs[0].0.try_into().unwrap();
 
     if input.is_empty() {
-        actions.player_movement = None;
         return;
     }
 

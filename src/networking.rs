@@ -1,4 +1,5 @@
-use crate::actions::{create_input_protocol, set_movement_actions};
+use crate::actions::{create_input_protocol, set_movement_actions, Actions};
+use crate::player::move_player;
 use crate::GameState;
 use bevy::{log, prelude::*, tasks::IoTaskPool};
 use bevy_ggrs::{GGRSPlugin, SessionType};
@@ -10,14 +11,25 @@ use matchbox_socket::WebRtcSocket;
 pub struct NetworkingPlugin;
 const ROLLBACK_SYSTEMS: &str = "rollback_systems";
 
+#[derive(SystemLabel, Debug, Clone, Hash, Eq, PartialEq)]
+enum Systems {
+    Input,
+    Move,
+}
+
 impl Plugin for NetworkingPlugin {
     fn build(&self, app: &mut App) {
         GGRSPlugin::<GGRSConfig>::new()
             .with_input_system(create_input_protocol)
-            .with_rollback_schedule(Schedule::default().with_stage(
-                ROLLBACK_SYSTEMS,
-                SystemStage::parallel().with_system(set_movement_actions),
-            ))
+            .with_rollback_schedule(
+                Schedule::default().with_stage(
+                    ROLLBACK_SYSTEMS,
+                    SystemStage::parallel()
+                        .with_system(set_movement_actions.label(Systems::Input))
+                        .with_system(move_player.label(Systems::Move).after(Systems::Input)),
+                ),
+            )
+            .register_rollback_type::<Transform>()
             .build(app);
         app.add_system_set(
             SystemSet::on_enter(GameState::Playing).with_system(start_matchbox_socket),

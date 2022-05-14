@@ -16,8 +16,7 @@ impl Plugin for PlayerPlugin {
             SystemSet::on_enter(GameState::Playing)
                 .with_system(spawn_player)
                 .with_system(spawn_camera),
-        )
-        .add_system_set(SystemSet::on_update(GameState::Playing).with_system(move_player));
+        );
     }
 }
 
@@ -42,7 +41,7 @@ fn spawn_player(mut commands: Commands, textures: Res<TextureAssets>) {
         .insert(Player);
 }
 
-fn move_player(
+pub fn move_player(
     time: Res<Time>,
     actions: Res<Actions>,
     mut player_query: Query<&mut Transform, With<Player>>,
