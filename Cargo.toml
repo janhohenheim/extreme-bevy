@@ -13,18 +13,20 @@ default = [
     "bevy/x11",
     "bevy_kira_audio/ogg",
 ]
-dev = ["bevy_editor_pls"]
+dev = [
+    "bevy_editor_pls"
+]
 
 [dependencies]
 bevy = { version = "0.7", default-features = false }
-bevy_ggrs = { version = "0.9.0", features = ["wasm-bindgen"] }
+bevy_ggrs = { version = "0.9.0", features = [ "wasm-bindgen" ] }
 matchbox_socket = { version = "0.3.0", features = [ "ggrs-socket" ] }
 rand = "0.8.3"
 bevy_kira_audio = "0.9"
 bevy_asset_loader = "0.10"
 bevy_editor_pls = { git = "https://github.com/jakobhellermann/bevy_editor_pls", optional = true }
-ggrs = { version = "0.9.1", features = [ "sync-send" ] }
-bytemuck = { version = "1.9.1", features= ["derive"] }
+ggrs = { version = "0.9.1", features = [ "sync-send", "wasm-bindgen" ] }
+bytemuck = { version = "1.9.1", features= [ "derive" ] }
 bitflags = "1.3.2"
 bevy-web-resizer = "2.0.0"
 
