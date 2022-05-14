@@ -1,6 +1,6 @@
 use crate::actions::Actions;
 use crate::config::FPS;
-use crate::loading::TextureAssets;
+use crate::loading::{SpriteAssets, TextureAssets};
 use crate::GameState;
 use bevy::prelude::*;
 
@@ -15,7 +15,7 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(
             SystemSet::on_enter(GameState::Playing)
-                .with_system(spawn_player)
+                .with_system(spawn_players)
                 .with_system(spawn_camera),
         );
     }
@@ -30,15 +30,32 @@ fn spawn_camera(mut commands: Commands) {
         .insert(Name::new("2D Camera"));
 }
 
-fn spawn_player(mut commands: Commands, textures: Res<TextureAssets>) {
+fn spawn_players(mut commands: Commands, textures: Res<TextureAssets>, sprites: Res<SpriteAssets>) {
+    spawn_player(
+        &mut commands,
+        &textures,
+        &sprites.bevy_one,
+        Vec3::new(-2.0, 0.0, 0.0),
+    );
+    spawn_player(
+        &mut commands,
+        &textures,
+        &sprites.bevy_two,
+        Vec3::new(2.0, 0.0, 0.0),
+    );
+}
+
+fn spawn_player(
+    commands: &mut Commands,
+    textures: &Res<TextureAssets>,
+    sprite: &Sprite,
+    translation: Vec3,
+) {
     commands
         .spawn_bundle(SpriteBundle {
             texture: textures.texture_bevy.clone(),
-            transform: Transform::from_translation(Vec3::new(0., 0., 1.)),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(1.0, 1.0)),
-                ..default()
-            },
+            transform: Transform::from_translation(translation),
+            sprite: sprite.clone(),
             ..default()
         })
         .insert(Name::new("Player"))
