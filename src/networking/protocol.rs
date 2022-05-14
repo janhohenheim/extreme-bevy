@@ -40,7 +40,7 @@ impl TryFrom<InputProtocol> for InputFlags {
     fn try_from(protocol: InputProtocol) -> Result<Self, Self::Error> {
         Self::from_bits(protocol.input).ok_or_else(|| {
             format!(
-                "Failed to read protocol bits as valid inputs. Received {}",
+                "Failed to read protocol bits as valid inputs. Received: {}",
                 protocol.input
             )
         })

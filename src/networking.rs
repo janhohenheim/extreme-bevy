@@ -3,7 +3,7 @@ use crate::config::FPS;
 use crate::player::move_players;
 use crate::GameState;
 use bevy::prelude::*;
-use bevy_ggrs::{GGRSPlugin, SessionType};
+use bevy_ggrs::GGRSPlugin;
 mod targets;
 use targets::{PlatformConfig, PlatformPlugin};
 pub mod protocol;
@@ -40,7 +40,6 @@ impl Plugin for NetworkingPlugin {
             .register_rollback_type::<Actions>()
             .build(app);
 
-        app.add_plugin(PlatformPlugin::default())
-            .insert_resource(SessionType::P2PSession);
+        app.add_plugin(PlatformPlugin::default());
     }
 }

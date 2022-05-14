@@ -4,6 +4,7 @@ use crate::{networking::protocol::LocalHandles, GameState};
 
 use super::shared::{self, create_session_builder};
 use bevy::{log, prelude::*};
+use bevy_ggrs::SessionType;
 use clap::Parser;
 use ggrs::{Config, PlayerType, SessionBuilder, UdpNonBlockingSocket};
 
@@ -38,6 +39,7 @@ struct Args {
 fn start_session(mut commands: Commands) {
     let args = Args::parse();
     let num_players = args.players.len();
+    log::info!("Got args: {:?}", args);
     assert!(num_players == 2);
 
     // create a GGRS session
@@ -66,4 +68,5 @@ fn start_session(mut commands: Commands) {
 
     commands.insert_resource(session);
     commands.insert_resource(LocalHandles { handles });
+    commands.insert_resource(SessionType::P2PSession);
 }

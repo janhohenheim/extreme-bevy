@@ -1,8 +1,9 @@
 use super::shared::{self, create_session_builder};
-use crate::GameState;
+use crate::{networking::protocol::LocalHandles, GameState};
 use bevy::{log, prelude::*, tasks::IoTaskPool};
+use bevy_ggrs::SessionType;
 use bevy_web_resizer::Plugin as WebResizerPlugin;
-use ggrs::{Config, SessionBuilder};
+use ggrs::{Config, PlayerType, SessionBuilder};
 use matchbox_socket::WebRtcSocket;
 
 #[derive(Debug, Default)]
@@ -10,6 +11,7 @@ pub struct WasmPlugin;
 impl Plugin for WasmPlugin {
     fn build(&self, app: &mut App) {
         log::info!("Using wasm networking plugin");
+
         app.add_system_set(
             SystemSet::on_enter(GameState::Playing).with_system(start_matchbox_socket),
         )
@@ -23,7 +25,7 @@ impl Plugin for WasmPlugin {
 /// Source: https://github.com/gschup/bevy_ggrs/blob/7d3def38720161610313c7031d6f1cb249098b43/examples/box_game/box_game.rs#L27
 #[derive(Debug)]
 pub struct WasmConfig;
-impl Config for GGRSConfig {
+impl Config for WasmConfig {
     type Input = shared::Input;
     type State = shared::State;
     type Address = String;
@@ -79,4 +81,5 @@ fn wait_for_players(mut commands: Commands, mut socket: ResMut<Option<WebRtcSock
         .expect("Session could not be created.");
     commands.insert_resource(session);
     commands.insert_resource(LocalHandles { handles });
+    commands.insert_resource(SessionType::P2PSession);
 }
