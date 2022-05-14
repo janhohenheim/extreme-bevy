@@ -6,8 +6,16 @@ use bevy::prelude::*;
 
 pub struct PlayerPlugin;
 
-#[derive(Component)]
-pub struct Player;
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
+pub struct Player {
+    handle: usize,
+}
+
+impl Player {
+    pub fn new(handle: usize) -> Self {
+        Self { handle }
+    }
+}
 
 /// This plugin handles player related stuff like movement
 /// Player logic is only active during the State `GameState::Playing`
@@ -36,12 +44,14 @@ fn spawn_players(mut commands: Commands, textures: Res<TextureAssets>, sprites: 
         &textures,
         &sprites.bevy_one,
         Vec3::new(-2.0, 0.0, 0.0),
+        Player::new(0),
     );
     spawn_player(
         &mut commands,
         &textures,
         &sprites.bevy_two,
         Vec3::new(2.0, 0.0, 0.0),
+        Player::new(1),
     );
 }
 
@@ -50,6 +60,7 @@ fn spawn_player(
     textures: &Res<TextureAssets>,
     sprite: &Sprite,
     translation: Vec3,
+    player: Player,
 ) {
     commands
         .spawn_bundle(SpriteBundle {
@@ -58,21 +69,25 @@ fn spawn_player(
             sprite: sprite.clone(),
             ..default()
         })
-        .insert(Name::new("Player"))
-        .insert(Player);
+        .insert(Name::from(format!("Player {}", player.handle)))
+        .insert(player);
 }
 
-pub fn move_player(actions: Res<Actions>, mut player_query: Query<&mut Transform, With<Player>>) {
+pub fn move_players(
+    actions: Res<Vec<Actions>>,
+    mut player_query: Query<(&mut Transform, &Player)>,
+) {
+    for (mut transform, player) in player_query.iter_mut() {
+        let actions = &actions[player.handle];
+        move_player(actions, &mut transform);
+    }
+}
+
+fn move_player(actions: &Actions, transform: &mut Transform) {
     if actions.player_movement.is_none() {
         return;
     }
     let speed = 15. / FPS as f32;
-    let movement = Vec3::new(
-        actions.player_movement.unwrap().x * speed,
-        actions.player_movement.unwrap().y * speed,
-        0.,
-    );
-    for mut player_transform in player_query.iter_mut() {
-        player_transform.translation += movement;
-    }
+    let movement = actions.player_movement.unwrap().extend(0.) * speed;
+    transform.translation += movement;
 }

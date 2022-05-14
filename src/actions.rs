@@ -1,5 +1,5 @@
 use crate::networking::{InputFlags, InputProtocol, LocalHandles};
-use bevy::prelude::*;
+use bevy::{log, prelude::*};
 use ggrs::{InputStatus, PlayerHandle};
 pub struct ActionsPlugin;
 
@@ -7,24 +7,35 @@ pub struct ActionsPlugin;
 // Actions can then be used as a resource in other systems to act on the player input.
 impl Plugin for ActionsPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<Actions>();
+        app.init_resource::<Vec<Actions>>();
     }
 }
 
-#[derive(Default)]
+#[derive(Debug, Component, Reflect, Default, Clone)]
 pub struct Actions {
     pub player_movement: Option<Vec2>,
 }
 
 pub fn set_movement_actions(
-    mut actions: ResMut<Actions>,
+    mut actions: ResMut<Vec<Actions>>,
     inputs: Res<Vec<(InputProtocol, InputStatus)>>,
 ) {
-    *actions = Actions::default();
-    let input: InputFlags = inputs[0].0.try_into().unwrap();
+    *actions = inputs
+        .iter()
+        .map(|(protocol, status)| parse_protocol_to_actions(protocol, *status))
+        .collect();
+}
 
+fn parse_protocol_to_actions(protocol: &InputProtocol, status: InputStatus) -> Actions {
+    let mut action = Actions::default();
+    if status == InputStatus::Disconnected {
+        log::info!("Someone disconnected");
+        return action;
+    }
+
+    let input = InputFlags::try_from(*protocol).unwrap();
     if input.is_empty() {
-        return;
+        return action;
     }
 
     let mut player_movement = Vec2::ZERO;
@@ -42,11 +53,12 @@ pub fn set_movement_actions(
     }
 
     if player_movement == Vec2::ZERO {
-        return;
+        return action;
     }
 
     player_movement = player_movement.normalize();
-    actions.player_movement = Some(player_movement);
+    action.player_movement = Some(player_movement);
+    action
 }
 
 enum GameControl {

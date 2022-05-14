@@ -1,6 +1,6 @@
-use crate::actions::{create_input_protocol, set_movement_actions};
+use crate::actions::{create_input_protocol, set_movement_actions, Actions};
 use crate::config::FPS;
-use crate::player::move_player;
+use crate::player::move_players;
 use crate::GameState;
 use bevy::{log, prelude::*, tasks::IoTaskPool};
 use bevy_ggrs::{GGRSPlugin, SessionType};
@@ -27,11 +27,18 @@ impl Plugin for NetworkingPlugin {
                 Schedule::default().with_stage(
                     ROLLBACK_SYSTEMS,
                     SystemStage::parallel()
-                        .with_system(set_movement_actions.label(Systems::Input))
-                        .with_system(move_player.label(Systems::Move).after(Systems::Input)),
+                        .with_system_set(State::<GameState>::get_driver())
+                        .with_system_set(
+                            SystemSet::on_update(GameState::Playing)
+                                .with_system(set_movement_actions.label(Systems::Input))
+                                .with_system(
+                                    move_players.label(Systems::Move).after(Systems::Input),
+                                ),
+                        ),
                 ),
             )
             .register_rollback_type::<Transform>()
+            .register_rollback_type::<Actions>()
             .build(app);
         app.add_system_set(
             SystemSet::on_enter(GameState::Playing).with_system(start_matchbox_socket),
