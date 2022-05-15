@@ -37,7 +37,7 @@ jobs:
       - name: Install cargo deps
         run: cargo install wasm-server-runner
       - name: Build & run tests for native
-        run: cargo test --features editor
+        run: cargo test --features editor,dynamic
       - name: Build for web
         run: cargo build --features editor --target wasm32-unknown-unknown 
   all-doc-tests:
