@@ -1,5 +1,5 @@
 use crate::networking::protocol::{InputFlags, InputProtocol, LocalHandles};
-use bevy::prelude::*;
+use bevy::{log, prelude::*};
 use ggrs::{InputStatus, PlayerHandle};
 pub struct ActionsPlugin;
 
